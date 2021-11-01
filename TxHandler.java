@@ -1,11 +1,13 @@
-public class TxHandler {
+public class TxHandler { 
+	private UTXOPool UTXOPool; // 
 
 	/* Creates a public ledger whose current UTXOPool (collection of unspent 
 	 * transaction outputs) is utxoPool. This should make a defensive copy of 
 	 * utxoPool by using the UTXOPool(UTXOPool uPool) constructor.
 	 */
 	public TxHandler(UTXOPool utxoPool) {
-		// IMPLEMENT THIS (it starts with a constructor)
+		// IMPLEMENT THIS (it starts with a constructor) 
+		utxoPool = new UTXOPool();
 	}
 
 	/* Returns true if 
@@ -20,6 +22,7 @@ public class TxHandler {
 
 	public boolean isValidTx(Transaction tx) {
 		// IMPLEMENT THIS
+		UTXOPool 
 		return false;
 	}
 
