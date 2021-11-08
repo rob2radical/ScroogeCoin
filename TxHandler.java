@@ -1,5 +1,5 @@
 public class TxHandler { 
-	private UTXOPool UTXOPool; // 
+	private UTXOPool utxoPool; // 
 
 	/* Creates a public ledger whose current UTXOPool (collection of unspent 
 	 * transaction outputs) is utxoPool. This should make a defensive copy of 
@@ -7,7 +7,7 @@ public class TxHandler {
 	 */
 	public TxHandler(UTXOPool utxoPool) {
 		// IMPLEMENT THIS (it starts with a constructor) 
-		utxoPool = new UTXOPool();
+		this.utxoPool = new UTXOPool();
 	}
 
 	/* Returns true if 
@@ -22,7 +22,39 @@ public class TxHandler {
 
 	public boolean isValidTx(Transaction tx) {
 		// IMPLEMENT THIS
-		UTXOPool 
+		UTXOPool Utxos = new UTXOPool(); // This will store all the unique UTXO's
+		double OutputSumPrev = 0;
+		double OutputSumCurr = 0;
+		int i;
+
+		for(i = 0; i < tx.numInputs(); i++) 
+		{ 
+			Transaction.Input in = tx.getInput(i);
+			UTXO utxo = new UTXO(in.prevTxHash, in.outputIndex);
+			Transaction.Output output = utxoPool.getTxOutput(utxo);
+
+			if(!utxoPool.contains(utxo)) 
+			{ 
+				return false;
+			}
+			if(!Crypto.verifySignature(output.address, tx.getRawDataToSign(i), in.signature))
+			{ 
+				return false;
+			}
+			if(Utxos.contains(utxo)) 
+			{ 
+				return false;
+			}
+
+		} 
+		for(Transaction.Output out : tx.getOutputs()) 
+		{
+			// checking if utxo output values are negative if so, return false 
+			if(out.value < 0) 
+			{ 
+				return false;
+			}
+		}
 		return false;
 	}
 
@@ -33,6 +65,28 @@ public class TxHandler {
 	 */
 	public Transaction[] handleTxs(Transaction[] possibleTxs) {
 		// IMPLEMENT THIS
+		Transaction[] validTx = new Transaction[];
+		int i;
+
+		for(Transaction tx : possibleTxs) 
+		{ 
+			if(isValidTx(tx)) 
+			{ 
+				validTx.add(tx); 
+				for(Transaction.Input in : tx.getInputs()) 
+				{ 
+					UTXO utxo = new UTXO(in.prevTxHash, in.outputIndex);
+					utxoPool.removeUTXO(utxo);
+				} 
+				for(i = 0; i < tx.numOutputs(); i++) 
+				{ 
+					Transaction.Output out = tx.getOutput(i);
+					UTXO utxo = new UTXO(tx.getHash(), i);
+					utxoPool.addUTXO(utxo, out);
+				}
+			}
+		} 
+		Transaction[] validTxArray = new Transaction[validTx.size()];
 		return null;
 	}
 
