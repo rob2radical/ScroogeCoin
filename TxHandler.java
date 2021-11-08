@@ -54,8 +54,12 @@ public class TxHandler {
 			{ 
 				return false;
 			}
+			OutputSumCurr += out.value;
+		} 
+		if(OutputSumPrev >= OutputSumCurr) 
+		{ 
+			return true;
 		}
-		return false;
 	}
 
 	/* Handles each epoch by receiving an unordered array of proposed 
