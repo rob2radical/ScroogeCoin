@@ -1,4 +1,5 @@
-import java.util.HashSet;
+import java.security.CryptoPrimitive;
+import java.util.*;
 
 public class TxHandler { 
 	private UTXOPool utxoPool; // 
@@ -38,15 +39,17 @@ public class TxHandler {
 			if(!utxoPool.contains(utxo)) 
 			{ 
 				return false;
-			}
-			if(!Crypto.verifySignature(output.address, tx.getRawDataToSign(i), in.signature))
+			} 
+			if(!tx.verifySignature(output.address, tx.getRawDataToSign(i), in.signature)) 
 			{ 
-				return false;
+				return false; 
 			}
 			if(Utxos.contains(utxo)) 
 			{ 
 				return false;
 			}
+			Utxos.addUTXO(utxo, output);
+			OutputSumPrev += output.value;
 
 		} 
 		for(Transaction.Output out : tx.getOutputs()) 
@@ -61,7 +64,8 @@ public class TxHandler {
 		if(OutputSumPrev >= OutputSumCurr) 
 		{ 
 			return true;
-		}
+		} 
+		return false;
 	}
 
 	/* Handles each epoch by receiving an unordered array of proposed 
