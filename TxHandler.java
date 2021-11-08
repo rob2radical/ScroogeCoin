@@ -1,3 +1,5 @@
+import java.util.HashSet;
+
 public class TxHandler { 
 	private UTXOPool utxoPool; // 
 
@@ -69,7 +71,9 @@ public class TxHandler {
 	 */
 	public Transaction[] handleTxs(Transaction[] possibleTxs) {
 		// IMPLEMENT THIS
-		Transaction[] validTx = new Transaction[];
+
+		// This will store/hold valid unprocessed transactions
+		HashSet<Transaction> validTx = new HashSet<>();
 		int i;
 
 		for(Transaction tx : possibleTxs) 
@@ -91,7 +95,7 @@ public class TxHandler {
 			}
 		} 
 		Transaction[] validTxArray = new Transaction[validTx.size()];
-		return null;
+		return validTx.toArray(validTxArray);
 	}
 
 } 
