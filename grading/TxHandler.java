@@ -1,16 +1,17 @@
-import java.security.CryptoPrimitive;
+import java.security.PublicKey;
+import java.security.Signature;
 import java.util.*;
 
-public class TxHandler { 
-	private UTXOPool utxoPool; // 
+public class TxHandler {
 
+	private UTXOPool utxoPool;
 	/* Creates a public ledger whose current UTXOPool (collection of unspent 
 	 * transaction outputs) is utxoPool. This should make a defensive copy of 
 	 * utxoPool by using the UTXOPool(UTXOPool uPool) constructor.
 	 */
 	public TxHandler(UTXOPool utxoPool) {
 		// IMPLEMENT THIS (it starts with a constructor) 
-		this.utxoPool = new UTXOPool();
+		this.utxoPool = new UTXOPool(utxoPool);
 	}
 
 	/* Returns true if 
@@ -25,47 +26,47 @@ public class TxHandler {
 
 	public boolean isValidTx(Transaction tx) {
 		// IMPLEMENT THIS
-		UTXOPool Utxos = new UTXOPool(); // This will store all the unique UTXO's
-		double OutputSumPrev = 0;
-		double OutputSumCurr = 0;
+		HashSet<UTXO> Utxo = new HashSet<UTXO>(); // This will store all the unique UTXO's
+		double input = 0.0;
+		double output = 0.0;
 		int i;
 
 		for(i = 0; i < tx.numInputs(); i++) 
 		{ 
 			Transaction.Input in = tx.getInput(i);
-			UTXO utxo = new UTXO(in.prevTxHash, in.outputIndex);
-			Transaction.Output output = utxoPool.getTxOutput(utxo);
-
-			if(!utxoPool.contains(utxo)) 
-			{ 
-				return false;
-			} 
-			if(!output.address.verifySignature(output.address, tx.getRawDataToSign(i), in.signature)) 
-			{ 
-				return false; 
-			}
-			if(Utxos.contains(utxo)) 
+			UTXO ut = new UTXO(in.prevTxHash, in.outputIndex); 
+			if(!this.utxoPool.contains(ut)) 
 			{ 
 				return false;
 			}
-			Utxos.addUTXO(utxo, output);
-			OutputSumPrev += output.value;
+			double outputValPrev = utxoPool.getTxOutput(ut).value;
+			input += outputValPrev;
 
+			if(Utxo.contains(ut)) 
+			{ 
+				return false;
+			}
+			Utxo.add(ut);
+
+			if(!utxoPool.getTxOutput(ut).address.verifySignature(tx.getRawDataToSign(i), in.signature)) 
+			{ 
+				return false;
+			}
 		} 
 		for(Transaction.Output out : tx.getOutputs()) 
 		{
 			// checking if utxo output values are negative if so, return false 
-			if(out.value < 0) 
+			if(out.value < 0.0) 
 			{ 
 				return false;
 			}
-			OutputSumCurr += out.value;
+			output += out.value;
 		} 
-		if(OutputSumPrev >= OutputSumCurr) 
+		if(output > input) 
 		{ 
-			return true;
+			return false;
 		} 
-		return false;
+		return true;
 	}
 
 	/* Handles each epoch by receiving an unordered array of proposed 
